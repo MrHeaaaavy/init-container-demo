@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp
+spec:
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      volumes:
+        - name: skywalking
+          emptyDir: {}
+      initContainers:
+        - name: prepare-files
+          image: local/init-container:v1
+          command: ["cp", "-r", "/tests", "/tmp"]
+          volumeMounts:
+            - mountPath: /tmp
+              name: skywalking
+      containers:
+        - name: myapp
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
+          image: local/runner:v1
+          command: ["ls", "-alh", "/opt/tests"]
+          volumeMounts:
+            - mountPath: /opt
+              name: skywalking
